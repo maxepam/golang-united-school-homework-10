@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -37,7 +38,7 @@ func Start(host string, port int) {
 func getNameHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Hello,  %v!", vars["param"])
+	fmt.Fprintf(w, "Hello, %v!", vars["param"])
 }
 
 // handler to for get /bad endpoint
@@ -47,9 +48,13 @@ func getBadHandler(w http.ResponseWriter, r *http.Request) {
 
 // handler to for post /data endpoint
 func postDataHandler(w http.ResponseWriter, r *http.Request) {
-	param := r.PostFormValue("PARAM")
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "I got message:\n%v", param)
+	fmt.Fprintf(w, "I got message:\n%v", string(body))
 }
 
 // handler to for post /headers endpoint
